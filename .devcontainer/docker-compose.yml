@@ -1,0 +1,39 @@
+services:
+  devcontainer:
+    container_name: ${DEVCONTAINER_NAME}
+    
+    # load environment variables from a dotenv file
+    env_file:
+      - .env
+      # uncomment to load secrets from a dotenv file - do not commit
+      # optionally add property "optional: true" to ignore if file is missing
+      # - .env-secrets
+    
+    # necessary to keep devcontainer alive
+    entrypoint: "sleep infinity"
+
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      # build to stage 'dev'
+      target: dev
+      # set args for build process
+      args:
+        # see Dockerfile for a full list of options
+        FROM_IMAGE: "nvidia/cuda:12.6.2-runtime-ubuntu24.04"
+        VENV_PATH: "/opt/venv"
+        PYTHON_VERSION: "3.11"
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
+    shm_size: '32gb'
+    
+    volumes:
+      # Mounts the project folder to '/workspace'.
+      - ../:/workspace:cached
